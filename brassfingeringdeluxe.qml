@@ -1,0 +1,319 @@
+import QtQuick 2.9
+import QtQuick.Layouts 1.1
+import QtQuick.Controls 1.3
+import QtQuick.Dialogs 1.2
+import Qt.labs.settings 1.0
+import MuseScore 3.0
+
+MuseScore {
+   version: "3.0"
+   description: "Adds brass fingering in a more configurable way"
+   pluginType: "dialog"
+   id: brassFingeringDeluxe
+
+   requiresScore: true
+
+   width: 200
+   height: 200
+
+   property bool breakLine: false
+   property int noteShift: 0
+   property var instrumentList: [ "Trumpet", "Trombone", "Tuba", "Euphonium" ]
+   property var valInstrument: "Trumpet"
+
+   Component.onCompleted : {
+      if (mscoreMajorVersion >= 4) {
+          brassFingeringDeluxe.title = "Brass Fingering Deluxe";
+      }
+   }
+
+   Item {
+        id: rect1
+        anchors.fill: parent
+
+        ColumnLayout {
+            id: col1
+            anchors.left: parent.left
+            anchors.right: parent.right
+            spacing: 2
+
+            Label {
+                text: "Configure fingering"
+            }
+
+            ComboBox {
+               id: selInstruments
+               width: 200
+               model: instrumentList
+               onCurrentIndexChanged: valInstrument = instrumentList[currentIndex]
+            }
+
+            Rectangle {height: 4}
+
+            CheckBox {
+                id: optBreakLine
+                text: "Break line"
+                checked: false
+            }
+            
+            Rectangle {height: 2}
+            RowLayout {
+               Label {
+                     text: "Note shift: "
+               }
+               SpinBox {
+                     id: valNoteShift
+                     implicitWidth: 45
+                     horizontalAlignment: Qt.AlignRight
+                     decimals: 0
+                     minimumValue: -12
+                     maximumValue: 12
+                     value: 0
+               }
+
+            }
+
+            // preserve user settings
+            Settings {
+                category: "BrassFingering"
+                property alias valueBreakLine: optBreakLine.checked
+                property alias valueNoteShift: valNoteShift.value
+                property alias valueInstrumentSelect: selInstruments.currentIndex
+            }
+        }
+        // The buttons
+         Item { Layout.fillHeight: true }
+         Button {
+            text:"Add fingering"
+            anchors {
+               top: col1.bottom
+               topMargin: 15
+               left: rect1.left
+               leftMargin: 10
+            }
+            onClicked: {
+               var hasError = false;
+
+               // set configuration
+               breakLine = optBreakLine.checked;
+               noteShift = valNoteShift.value;
+
+               addFingering()
+
+            }
+        }
+
+      //   Button {
+      //       text: "Cancel"
+      //       anchors {
+      //           top: col1.bottom
+      //           topMargin: 15
+      //           right: rect1.right
+      //           rightMargin: 10
+      //       }
+      //       onClicked: {
+      //           quit();
+      //       }
+      //   }
+    }
+
+   function griff_trumpet(midi) {
+      var lineBreak = breakLine ? "\n" : ""
+      switch (midi){
+         case 34: return "1"+lineBreak+"2"+lineBreak+"3"; break;
+         case 35: return "1"+lineBreak+"3"; break;
+         case 36: return "2"+lineBreak+"3"; break;
+         case 37: return "1"+lineBreak+"2"; break;
+         case 38: return "1"; break;
+         case 39: return "2"; break;
+         case 40: return "0"; break; //Bb Below Staff Treble
+         case 41: return "1"+lineBreak+"2"+lineBreak+"3"; break; //B
+         case 42: return "1"+lineBreak+"3"; break; //C
+         case 43: return "2"+lineBreak+"3"; break; //C#
+         case 44: return "1"+lineBreak+"2"; break; //D
+         case 45: return "1"; break; //Eb
+         case 46: return "2"; break; //E
+         case 47: return "0"; break; //F
+         case 48: return "2"+lineBreak+"3"; break; //F#
+         case 49: return "1"+lineBreak+"2"; break; //G
+         case 50: return "1"; break; //G#
+         case 51: return "2"; break; //A
+         case 52: return "0"; break; //Bb
+         case 53: return "1"+lineBreak+"2"; break;
+         case 54: return "1"; break;
+         case 55: return "2"; break;
+         case 56: return "0"; break;
+         case 57: return "1"; break;
+         case 58: return "2"; break;
+         case 59: return "0"; break;
+         case 60: return "2"+lineBreak+"3"; break;
+         case 61: return "1"+lineBreak+"2"; break;
+         case 62: return "1"; break;
+         case 63: return "2"; break;
+         case 64: return "0"; break;
+         case 65: return "#2 or b12"; break;
+         case 66: return "1"; break;
+         default: return "";
+      }
+   }
+
+   function griff_trombone(midi) { 
+         switch (midi){
+            case 23: return "6"; break;//F
+            case 24: return "5"; break;//Gb
+            case 25: return "4"; break;//G
+            case 26: return "3"; break;//Ab
+            case 27: return "2"; break;//A
+            case 28: return "1"; break;//Bb 2nd Line
+            case 29: return "7"; break;//B
+            case 30: return "6"; break;//C
+            case 31: return "5"; break;//Db
+            case 32: return "4"; break;//D
+            case 33: return "3"; break;//Eb            
+            case 34: return "2"; break;//E
+            case 35: return "1"; break;//F
+            case 36: return "5"; break;//Gb
+            case 37: return "4"; break;//G
+            case 38: return "3"; break;//Ab
+            case 39: return "2"; break;//A
+            case 40: return "1"; break;//Bb Top Staff Bass
+            case 41: return "4"; break;//B
+            case 42: return "3"; break;//C
+            case 43: return "2"; break;//C#
+            case 44: return "1"; break;//D
+            case 45: return "3"; break;
+            case 46: return "2"; break;
+            case 47: return "1"; break;
+            case 48: return "3"; break;
+            case 49: return "2"; break;
+            case 50: return "3"; break;
+            case 51: return "1"; break;//Bb Above Staff Bass
+            default: return "";			
+         }
+   }
+
+   function griff_tuba(midi) {
+      var lineBreak = breakLine ? "\n" : ""
+      switch (midi){
+         case 10: return "1"+lineBreak+"2"+lineBreak+"3"; break;
+         case 11: return "1"+lineBreak+"3"; break;
+         case 12: return "2"+lineBreak+"3"; break;
+         case 13: return "1"+lineBreak+"2"; break;
+         case 14: return "1"; break;
+         case 15: return "2"; break;
+         case 16: return "0"; break; //Bb below staff
+         case 17: return "1"+lineBreak+"2"+lineBreak+"3"; break; //B
+         case 18: return "1"+lineBreak+"3"; break; //C
+         case 19: return "2"+lineBreak+"3"; break; //C#
+         case 20: return "1"+lineBreak+"2"; break; //D
+         case 21: return "1"; break; //Eb
+         case 22: return "2"; break; //E
+         case 23: return "0"; break; //F
+         case 24: return "2"+lineBreak+"3"; break; //F#
+         case 25: return "1"+lineBreak+"2"; break; //G
+         case 26: return "1"; break; //G#
+         case 27: return "2"; break; //A
+         case 28: return "0"; break; //Bb 2nd line
+         case 29: return "1"+lineBreak+"2"; break;
+         case 30: return "1"; break;
+         case 31: return "2"; break;
+         case 32: return "0"; break;
+         case 33: return "1"; break;
+         case 34: return "2"; break;
+         case 35: return "0"; break;
+         case 36: return "2"+lineBreak+"3"; break;
+         case 37: return "1"+lineBreak+"2"; break;
+         case 38: return "1"; break;
+         case 39: return "2"; break;
+         case 40: return "0"; break;
+         case 41: return "#2 or b12"; break;
+         case 42: return "1"; break;
+         default: return "";			
+      }
+   }
+
+   function griff_euphonium(midi) { 
+      var lineBreak = breakLine ? "\n" : ""
+      switch (midi){
+         case 22: return "1"+lineBreak+"2"+lineBreak+"3"; break;
+         case 23: return "1"+lineBreak+"3"; break;
+         case 24: return "2"+lineBreak+"3"; break;
+         case 25: return "1"+lineBreak+"2"; break;
+         case 26: return "1"; break;
+         case 27: return "2"; break;
+         case 28: return "0"; break; //Bb 2nd Line
+         case 29: return "1"+lineBreak+"2"+lineBreak+"3"; break; //B
+         case 30: return "1"+lineBreak+"3"; break; //C
+         case 31: return "2"+lineBreak+"3"; break; //C#
+         case 32: return "1"+lineBreak+"2"; break; //D
+         case 33: return "1"; break; //Eb
+         case 34: return "2"; break; //E
+         case 35: return "0"; break; //F
+         case 36: return "2"+lineBreak+"3"; break; //F#
+         case 37: return "1"+lineBreak+"2"; break; //G
+         case 38: return "1"; break; //G#
+         case 39: return "2"; break; //A
+         case 40: return "0"; break; //Bb
+         case 41: return "1"+lineBreak+"2"; break;
+         case 42: return "1"; break;
+         case 43: return "2"; break;
+         case 44: return "0"; break;
+         case 45: return "1"; break;
+         case 46: return "2"; break;
+         case 47: return "0"; break;
+         case 48: return "2"+lineBreak+"3"; break;
+         case 49: return "1"+lineBreak+"2"; break;
+         case 50: return "1"; break;
+         case 51: return "2"; break;
+         case 52: return "0"; break;
+         case 53: return "#2 or b12"; break;
+         case 54: return "1"; break;
+         default: return "";			
+      }
+   }
+
+   function griff(midi) { 
+      midi = midi-20+noteShift;
+      switch(valInstrument){
+         case "Trumpet": return griff_trumpet(midi);
+         case "Trombone": return griff_trombone(midi);
+         case "Tuba": return griff_tuba(midi);
+         case "Euphonium": return griff_euphonium(midi);
+         default: return griff_trumpet(midi);
+      }
+
+   }
+
+   function addFingering() {
+
+      curScore.startCmd()
+      var cursor   = curScore.newCursor();
+      cursor.staffIdx = 0;
+      cursor.voice = 0;
+      cursor.rewind(0);  // set cursor to first chord/rest
+      var CrLf = '';
+      while (cursor.segment) {
+         if (cursor.element && cursor.element.type == Element.CHORD) {
+            if (cursor.element.notes[0].elements) {
+               var elements = cursor.element.notes[0].elements;
+               for (var i=0; i<elements.length; i++) {
+                  if (elements[i].type==Element.FINGERING) {
+                     cursor.element.notes[0].remove(elements[i]);
+                  }
+               }
+            }
+            var text  = newElement(Element.FINGERING)
+            var note = cursor.element.notes[0]
+            text.text = griff(note.pitch) + CrLf
+            if (note.tieBack == null) cursor.add(text)
+         }
+         cursor.next();
+      }
+      curScore.endCmd()
+      // quit();
+   }
+
+   onRun: {
+   //   addFingering()
+   }
+}
