@@ -10,6 +10,7 @@ MuseScore {
    description: "Adds brass fingering in a more configurable way"
    pluginType: "dialog"
    id: brassFingeringDeluxe
+   menuPath: "Plugins.Brass Fingering Deluxe"
 
    requiresScore: true
 
