@@ -15,7 +15,7 @@ MuseScore {
    requiresScore: true
 
    width: 200
-   height: 200
+   height: 220
 
    property bool breakLine: false
    property int noteShift: 0
@@ -72,9 +72,9 @@ MuseScore {
             }
 
             Button {
+               id: addButton
                text:"Add fingering"
                anchors.horizontalCenter: parent.horizontalCenter
-
 
                onClicked: {
                   var hasError = false;
@@ -88,6 +88,17 @@ MuseScore {
                }
             }
 
+            Button {
+               text: "Clean fingering"
+               anchors {
+                  top: addButton.bottom + 2
+                  horizontalCenter: parent.horizontalCenter
+               }
+               onClicked: {
+                  cleanFingering();
+               }
+            }
+
             // preserve user settings
             Settings {
                 category: "BrassFingering"
@@ -95,23 +106,28 @@ MuseScore {
                 property alias valueNoteShift: valNoteShift.value
                 property alias valueInstrumentSelect: selInstruments.currentIndex
             }
-        }
-        // The buttons
-         
-
-      //   Button {
-      //       text: "Cancel"
-      //       anchors {
-      //           top: col1.bottom
-      //           topMargin: 15
-      //           right: rect1.right
-      //           rightMargin: 10
-      //       }
-      //       onClicked: {
-      //           quit();
-      //       }
-      //   }
+        }       
     }
+
+   function cleanFingering() {
+      curScore.startCmd()
+      var cursor   = curScore.newCursor();
+      cursor.staffIdx = 0;
+      cursor.voice = 0;
+      cursor.rewind(0);
+      while (cursor.segment) {
+         if (cursor.element && cursor.element.type == Element.CHORD && cursor.element.notes[0].elements) {
+            var elements = cursor.element.notes[0].elements;
+            for (var i=0; i<elements.length; i++) {
+               if (elements[i].type==Element.FINGERING) {
+                  cursor.element.notes[0].remove(elements[i]);
+               }
+            }
+         }
+         cursor.next();
+      }
+      curScore.endCmd()
+   }
 
    function onInstrumentSelect(currentIndex) {
       valInstrument = instrumentList[currentIndex]
@@ -292,26 +308,17 @@ MuseScore {
    }
 
    function addFingering() {
-
+      cleanFingering()
       curScore.startCmd()
       var cursor   = curScore.newCursor();
       cursor.staffIdx = 0;
       cursor.voice = 0;
       cursor.rewind(0);  // set cursor to first chord/rest
-      var CrLf = '';
       while (cursor.segment) {
          if (cursor.element && cursor.element.type == Element.CHORD) {
-            if (cursor.element.notes[0].elements) {
-               var elements = cursor.element.notes[0].elements;
-               for (var i=0; i<elements.length; i++) {
-                  if (elements[i].type==Element.FINGERING) {
-                     cursor.element.notes[0].remove(elements[i]);
-                  }
-               }
-            }
             var text  = newElement(Element.FINGERING)
             var note = cursor.element.notes[0]
-            text.text = griff(note.pitch) + CrLf
+            text.text = griff(note.pitch)
             if (note.tieBack == null) cursor.add(text)
          }
          cursor.next();
