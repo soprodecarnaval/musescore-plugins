@@ -34,19 +34,14 @@ MuseScore {
 
         ColumnLayout {
             id: col1
-            anchors.left: parent.left
-            anchors.right: parent.right
-            spacing: 2
-
-            Label {
-                text: "Configure fingering"
-            }
+            anchors.fill: parent
 
             ComboBox {
                id: selInstruments
                width: 200
                model: instrumentList
-               onCurrentIndexChanged: valInstrument = instrumentList[currentIndex]
+               onCurrentIndexChanged: onInstrumentSelect(currentIndex)
+               anchors.horizontalCenter: parent.horizontalCenter
             }
 
             Rectangle {height: 4}
@@ -55,10 +50,12 @@ MuseScore {
                 id: optBreakLine
                 text: "Break line"
                 checked: false
+                anchors.horizontalCenter: parent.horizontalCenter
             }
             
             Rectangle {height: 2}
             RowLayout {
+               anchors.horizontalCenter: parent.horizontalCenter
                Label {
                      text: "Note shift: "
                }
@@ -74,6 +71,23 @@ MuseScore {
 
             }
 
+            Button {
+               text:"Add fingering"
+               anchors.horizontalCenter: parent.horizontalCenter
+
+
+               onClicked: {
+                  var hasError = false;
+
+                  // set configuration
+                  breakLine = optBreakLine.checked;
+                  noteShift = valNoteShift.value;
+
+                  addFingering()
+
+               }
+            }
+
             // preserve user settings
             Settings {
                 category: "BrassFingering"
@@ -83,26 +97,7 @@ MuseScore {
             }
         }
         // The buttons
-         Item { Layout.fillHeight: true }
-         Button {
-            text:"Add fingering"
-            anchors {
-               top: col1.bottom
-               topMargin: 15
-               left: rect1.left
-               leftMargin: 10
-            }
-            onClicked: {
-               var hasError = false;
-
-               // set configuration
-               breakLine = optBreakLine.checked;
-               noteShift = valNoteShift.value;
-
-               addFingering()
-
-            }
-        }
+         
 
       //   Button {
       //       text: "Cancel"
@@ -117,6 +112,17 @@ MuseScore {
       //       }
       //   }
     }
+
+   function onInstrumentSelect(currentIndex) {
+      valInstrument = instrumentList[currentIndex]
+      if (valInstrument == "Trombone"){
+         optBreakLine.enabled = false
+         optBreakLine.opacity = 0.5;
+      } else {
+         optBreakLine.enabled = true
+         optBreakLine.opacity = 1.0;
+      }
+   }
 
    function griff_trumpet(midi) {
       var lineBreak = breakLine ? "\n" : ""
