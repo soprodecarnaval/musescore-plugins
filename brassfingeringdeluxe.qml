@@ -84,7 +84,7 @@ MuseScore {
                   noteShift = valNoteShift.value;
 
                   addFingering()
-
+                  exit();
                }
             }
 
@@ -96,6 +96,7 @@ MuseScore {
                }
                onClicked: {
                   cleanFingering();
+                  exit();
                }
             }
 
@@ -109,25 +110,15 @@ MuseScore {
         }       
     }
 
-   function cleanFingering() {
-      curScore.startCmd()
-      var cursor   = curScore.newCursor();
-      cursor.staffIdx = 0;
-      cursor.voice = 0;
-      cursor.rewind(0);
-      while (cursor.segment) {
-         if (cursor.element && cursor.element.type == Element.CHORD && cursor.element.notes[0].elements) {
-            var elements = cursor.element.notes[0].elements;
-            for (var i=0; i<elements.length; i++) {
-               if (elements[i].type==Element.FINGERING) {
-                  cursor.element.notes[0].remove(elements[i]);
-               }
-            }
-         }
-         cursor.next();
+   function exit() {
+      if (mscoreMajorVersion >= 4) {
+         quit()
+      } else {
+         Qt.quit()
       }
-      curScore.endCmd()
    }
+
+
 
    function onInstrumentSelect(currentIndex) {
       valInstrument = instrumentList[currentIndex]
@@ -307,12 +298,44 @@ MuseScore {
 
    }
 
-   function addFingering() {
+   function listProperty(item) {
+      for (var p in item)
+      {
+         if( typeof item[p] != "function" )
+               if(p != "objectName")
+                  console.error(p + ":" + item[p]);
+      }
+
+   }
+
+   function cleanFingering() {
+      curScore.startCmd()
+      var cursor   = curScore.newCursor();
+      // cursor.staffIdx = 0;
+      // cursor.voice = 0;
+      cursor.staffIdx = cursor.score.selection.startStaff;
+      cursor.rewind(0);
+      while (cursor.segment) {
+         if (cursor.element && cursor.element.type == Element.CHORD && cursor.element.notes[0].elements) {
+            var elements = cursor.element.notes[0].elements;
+            for (var i=0; i<elements.length; i++) {
+               if (elements[i].type==Element.FINGERING) {
+                  cursor.element.notes[0].remove(elements[i]);
+               }
+            }
+         }
+         cursor.next();
+      }
+      curScore.endCmd()
+   }
+
+function addFingering() {
       cleanFingering()
       curScore.startCmd()
       var cursor   = curScore.newCursor();
-      cursor.staffIdx = 0;
-      cursor.voice = 0;
+      cursor.staffIdx = cursor.score.selection.startStaff;
+      //cursor.voice = 0;
+      listProperty(cursor.score.selection)
       cursor.rewind(0);  // set cursor to first chord/rest
       while (cursor.segment) {
          if (cursor.element && cursor.element.type == Element.CHORD) {
