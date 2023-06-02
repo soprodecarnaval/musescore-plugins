@@ -19,8 +19,8 @@ MuseScore {
 
    property bool breakLine: false
    property int noteShift: 0
-   property var instrumentList: [ "Trumpet", "Trombone", "Tuba", "Euphonium" ]
-   property var valInstrument: "Trumpet"
+   property var instrumentList: [ "Trumpet Bb", "Trumpet C", "Trombone", "Tuba", "Euphonium" ]
+   property var valInstrument: "Trumpet Bb"
 
    Component.onCompleted : {
       if (mscoreMajorVersion >= 4) {
@@ -289,7 +289,8 @@ MuseScore {
    function griff(midi) { 
       midi = midi-20+noteShift;
       switch(valInstrument){
-         case "Trumpet": return griff_trumpet(midi);
+         case "Trumpet Bb": return griff_trumpet(midi+2);
+         case "Trumpet C": return griff_trumpet(midi);
          case "Trombone": return griff_trombone(midi);
          case "Tuba": return griff_tuba(midi);
          case "Euphonium": return griff_euphonium(midi);
