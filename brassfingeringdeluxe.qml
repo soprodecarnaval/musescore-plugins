@@ -312,8 +312,6 @@ MuseScore {
    function cleanFingering() {
       curScore.startCmd()
       var cursor   = curScore.newCursor();
-      // cursor.staffIdx = 0;
-      // cursor.voice = 0;
       cursor.staffIdx = cursor.score.selection.startStaff;
       cursor.rewind(0);
       while (cursor.segment) {
@@ -335,8 +333,6 @@ function addFingering() {
       curScore.startCmd()
       var cursor   = curScore.newCursor();
       cursor.staffIdx = cursor.score.selection.startStaff;
-      //cursor.voice = 0;
-      listProperty(cursor.score.selection)
       cursor.rewind(0);  // set cursor to first chord/rest
       while (cursor.segment) {
          if (cursor.element && cursor.element.type == Element.CHORD) {
