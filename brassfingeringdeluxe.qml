@@ -165,7 +165,7 @@ MuseScore {
          case 62: return "1"; break;
          case 63: return "2"; break;
          case 64: return "0"; break;
-         case 65: return "#2 or b12"; break;
+         case 65: return "2"; break;
          case 66: return "1"; break;
          default: return "";
       }
@@ -240,7 +240,7 @@ MuseScore {
          case 38: return "1"; break;
          case 39: return "2"; break;
          case 40: return "0"; break;
-         case 41: return "#2 or b12"; break;
+         case 41: return "2"; break;
          case 42: return "1"; break;
          default: return "";			
       }
@@ -280,7 +280,7 @@ MuseScore {
          case 50: return "1"; break;
          case 51: return "2"; break;
          case 52: return "0"; break;
-         case 53: return "#2 or b12"; break;
+         case 53: return "2"; break;
          case 54: return "1"; break;
          default: return "";			
       }
