@@ -84,7 +84,7 @@ MuseScore {
                   noteShift = valNoteShift.value;
 
                   addFingering()
-                  exit();
+                  finish();
                }
             }
 
@@ -96,7 +96,7 @@ MuseScore {
                }
                onClicked: {
                   cleanFingering();
-                  exit();
+                  finish();
                }
             }
 
@@ -110,10 +110,8 @@ MuseScore {
         }       
     }
 
-   function exit() {
-      if (mscoreMajorVersion >= 4) {
-         quit()
-      } else {
+   function finish() {
+      if (mscoreMajorVersion < 4) {
          Qt.quit()
       }
    }
@@ -291,9 +289,9 @@ MuseScore {
       switch(valInstrument){
          case "Trumpet Bb": return griff_trumpet(midi+2);
          case "Trumpet C": return griff_trumpet(midi);
-         case "Trombone": return griff_trombone(midi);
-         case "Tuba": return griff_tuba(midi);
-         case "Euphonium": return griff_euphonium(midi);
+         case "Trombone": return griff_trombone(midi+2);
+         case "Tuba": return griff_tuba(midi+2);
+         case "Euphonium": return griff_euphonium(midi+2);
          default: return griff_trumpet(midi);
       }
 
