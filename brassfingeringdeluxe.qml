@@ -53,7 +53,7 @@ MuseScore {
             id: selInstruments
             width: 200
             model: instrumentList
-            onCurrentIndexChanged: onInstrumentSelect(currentIndex)
+            onCurrentIndexChanged: onInstrumentSelect()
             anchors.horizontalCenter: parent.horizontalCenter
          }
 
@@ -142,14 +142,17 @@ MuseScore {
       if (optAuto.checked){
          selInstruments.enabled = false
          selInstruments.opacity = 0.5
+         optBreakLine.enabled = true
+         optBreakLine.opacity = 1.0;
       } else {
          selInstruments.enabled = true
          selInstruments.opacity = 1
+         onInstrumentSelect()
       }
    }
 
-   function onInstrumentSelect(currentIndex) {
-      valInstrument = instrumentList[currentIndex]
+   function onInstrumentSelect() {
+      valInstrument = instrumentList[selInstruments.currentIndex]
       if (valInstrument == "Trombone") {
          optBreakLine.enabled = false
          optBreakLine.opacity = 0.5;
@@ -386,6 +389,9 @@ MuseScore {
             case "trumpet":
                valInstrument = "Trumpet Bb"
                break;
+            case "bb-trumpet":
+               valInstrument = "Trumpet Bb"
+               break;
             case "euphonium-treble":
                valInstrument = "Euphonium"
                break;
@@ -406,17 +412,14 @@ MuseScore {
          }
       }
       curScore.endCmd()
-
-
-
-
    }
 
    function addFingering() {
-      cleanFingering()
       curScore.startCmd()
       var cursor = curScore.newCursor();
-      cursor.staffIdx = cursor.score.selection.startStaff;
+      var staff = cursor.score.selection.startStaff;
+      cursor.staffIdx = staff
+      cleanFingering(staff)
       cursor.rewind(0);  // set cursor to first chord/rest
       while (cursor.segment) {
          if (cursor.element && cursor.element.type == Element.CHORD) {
