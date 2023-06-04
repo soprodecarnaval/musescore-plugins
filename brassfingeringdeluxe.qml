@@ -348,7 +348,7 @@ MuseScore {
       curScore.endCmd()
    }
 
-   function cleanFingering(staff = null) {
+   function cleanFingering(staff) {
       curScore.startCmd()
       var cursor = curScore.newCursor();
       cursor.staffIdx = staff == null ? cursor.score.selection.startStaff : staff;
@@ -380,16 +380,17 @@ MuseScore {
          var instrument = cursor.score.parts[i].instrumentId
          console.error(instrument)
          switch(instrument) {
+            case "brass.trombone":
             case "trombone":
                valInstrument = "Trombone"
                break;
+            case "brass.tuba":
             case "tuba":
                valInstrument = "Tuba"
                break;
             case "trumpet":
-               valInstrument = "Trumpet Bb"
-               break;
             case "bb-trumpet":
+            case "brass.trumpet.bflat":
                valInstrument = "Trumpet Bb"
                break;
             case "euphonium-treble":
@@ -398,6 +399,7 @@ MuseScore {
             case "c-trumpet":
                valInstrument = "Trumpet C"
                break;
+
             default:
                continue
          }
