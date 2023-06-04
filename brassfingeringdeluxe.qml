@@ -26,6 +26,7 @@ MuseScore {
       if (mscoreMajorVersion >= 4) {
          brassFingeringDeluxe.title = "Brass Fingering Deluxe";
       }
+      checkAutoOption()
    }
 
    Item {
@@ -111,7 +112,11 @@ MuseScore {
                horizontalCenter: parent.horizontalCenter
             }
             onClicked: {
-               cleanFingering();
+               if(optAuto.checked) {
+                  cleanAllFingering()
+               } else {
+                  cleanFingering();
+               }
                finish();
             }
          }
@@ -120,8 +125,6 @@ MuseScore {
             Settings {
             category: "BrassFingering"
                property alias valueOptAuto: optAuto.checked
-               property alias valueInstrumentSelectEnabled: selInstruments.enabled
-               property alias valueInstrumentSelectOpacity: selInstruments.opacity
                property alias valueBreakLine: optBreakLine.checked
                property alias valueNoteShift: valNoteShift.value
                property alias valueInstrumentSelect: selInstruments.currentIndex
@@ -333,10 +336,19 @@ MuseScore {
 
    }
 
-   function cleanFingering() {
+   function cleanAllFingering() {
       curScore.startCmd()
       var cursor = curScore.newCursor();
-      cursor.staffIdx = cursor.score.selection.startStaff;
+      for(var i = 0; i < cursor.score.parts.length; i++ ){
+         cleanFingering(i)
+      }
+      curScore.endCmd()
+   }
+
+   function cleanFingering(staff = null) {
+      curScore.startCmd()
+      var cursor = curScore.newCursor();
+      cursor.staffIdx = staff == null ? cursor.score.selection.startStaff : staff;
       cursor.rewind(0);
       while (cursor.segment) {
          if (cursor.element && cursor.element.type == Element.CHORD && cursor.element.notes[0].elements) {
@@ -358,6 +370,7 @@ MuseScore {
 
       for(var i = 0; i < cursor.score.parts.length; i++ ){
          cursor.staffIdx = i;
+         cleanFingering(i)
          cursor.rewind(0);  // set cursor to first chord/rest
 
          var default_shift = 0
