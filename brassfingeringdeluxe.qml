@@ -95,12 +95,14 @@ MuseScore {
                // set configuration
                breakLine = optBreakLine.checked;
                noteShift = valNoteShift.value;
-
+               
+               curScore.startCmd()
                if(optAuto.checked) {
                   autoAddFingering()
                } else {
                   addFingering()
                }
+               curScore.endCmd()
                finish();
             }
          }
@@ -112,11 +114,13 @@ MuseScore {
                horizontalCenter: parent.horizontalCenter
             }
             onClicked: {
+               curScore.startCmd()
                if(optAuto.checked) {
                   cleanAllFingering()
                } else {
                   cleanFingering();
                }
+               curScore.endCmd()
                finish();
             }
          }
@@ -340,16 +344,13 @@ MuseScore {
    }
 
    function cleanAllFingering() {
-      curScore.startCmd()
       var cursor = curScore.newCursor();
       for(var i = 0; i < cursor.score.parts.length; i++ ){
          cleanFingering(i)
       }
-      curScore.endCmd()
    }
 
    function cleanFingering(staff) {
-      curScore.startCmd()
       var cursor = curScore.newCursor();
       cursor.staffIdx = staff == null ? cursor.score.selection.startStaff : staff;
       cursor.rewind(0);
@@ -364,11 +365,9 @@ MuseScore {
          }
          cursor.next();
       }
-      curScore.endCmd()
    }
 
    function autoAddFingering() {
-      curScore.startCmd()
       var cursor = curScore.newCursor();
 
       for(var i = 0; i < cursor.score.parts.length; i++ ){
@@ -382,6 +381,7 @@ MuseScore {
          switch(instrument) {
             case "brass.trombone":
             case "trombone":
+            case "brass.trombone.tenor":
                valInstrument = "Trombone"
                break;
             case "brass.tuba":
@@ -391,6 +391,7 @@ MuseScore {
             case "trumpet":
             case "bb-trumpet":
             case "brass.trumpet.bflat":
+            case "brass.trumpet":
                valInstrument = "Trumpet Bb"
                break;
             case "euphonium-treble":
@@ -413,11 +414,9 @@ MuseScore {
             cursor.next();
          }
       }
-      curScore.endCmd()
    }
 
    function addFingering() {
-      curScore.startCmd()
       var cursor = curScore.newCursor();
       var staff = cursor.score.selection.startStaff;
       cursor.staffIdx = staff
@@ -432,7 +431,6 @@ MuseScore {
          }
          cursor.next();
       }
-      curScore.endCmd()
    }
 
    onRun: {
