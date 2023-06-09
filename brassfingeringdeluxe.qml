@@ -84,6 +84,13 @@ MuseScore {
 
          }
 
+         CheckBox {
+            id: optCleanStaffText
+            text: "Clean staff text"
+            checked: false
+            anchors.horizontalCenter: parent.horizontalCenter
+         }
+
             Button {
             id: addButton
             text: "Add fingering"
@@ -107,17 +114,10 @@ MuseScore {
             }
          }
 
-         CheckBox {
-            id: optCleanStaffText
-            text: "Clean staff text"
-            checked: false
-            anchors.horizontalCenter: parent.horizontalCenter
-         }
-
          Button {
             text: "Clean fingering"
             anchors {
-               top: optCleanStaffText.bottom + 2
+               top: addButton.bottom + 2
                horizontalCenter: parent.horizontalCenter
             }
             onClicked: {
@@ -354,7 +354,12 @@ MuseScore {
    function cleanAllFingering() {
       var cursor = curScore.newCursor();
       for(var i = 0; i < cursor.score.parts.length; i++ ){
-         cleanFingering(i)
+         var startTrack = cursor.score.parts[i].startTrack
+         var endTrack = cursor.score.parts[i].endTrack
+         console.error(`start track: ${startTrack}, end track: ${endTrack}` )
+         for(var j = 0; j < (endTrack - startTrack)/4; j++){
+            cleanFingering(startTrack/4+j)
+         }
       }
    }
 
@@ -388,48 +393,56 @@ MuseScore {
       var cursor = curScore.newCursor();
 
       for(var i = 0; i < cursor.score.parts.length; i++ ){
-         cursor.staffIdx = i;
-         cleanFingering(i)
-         cursor.rewind(0);  // set cursor to first chord/rest
-
+         var startTrack = cursor.score.parts[i].startTrack
+         var endTrack = cursor.score.parts[i].endTrack
          var default_shift = 0
          var instrument = cursor.score.parts[i].instrumentId
          console.error(instrument)
-         switch(instrument) {
-            case "brass.trombone":
-            case "trombone":
-            case "brass.trombone.tenor":
-               valInstrument = "Trombone"
-               break;
-            case "brass.tuba":
-            case "tuba":
-               valInstrument = "Tuba"
-               break;
-            case "trumpet":
-            case "bb-trumpet":
-            case "brass.trumpet.bflat":
-            case "brass.trumpet":
-               valInstrument = "Trumpet Bb"
-               break;
-            case "euphonium-treble":
-               valInstrument = "Euphonium"
-               break;
-            case "c-trumpet":
-               valInstrument = "Trumpet C"
-               break;
+         console.error(`start track: ${startTrack}, end track: ${endTrack}` )
 
-            default:
-               continue
-         }
-         while (cursor.segment) {
-            if (cursor.element && cursor.element.type == Element.CHORD) {
-               var text = newElement(Element.FINGERING)
-               var note = cursor.element.notes[0]
-               text.text = griff(note.pitch)
-               if (note.tieBack == null) cursor.add(text)
+         for(var j = 0; j < (endTrack - startTrack)/4; j++){
+            cursor.staffIdx = startTrack/4+j;
+            cleanFingering(startTrack/4+j)
+            cursor.rewind(0);  // set cursor to first chord/rest
+
+            switch(instrument) {
+               case "brass.trombone":
+               case "trombone":
+               case "brass.trombone.tenor":
+                  valInstrument = "Trombone"
+                  break;
+               case "brass.tuba":
+               case "tuba":
+                  valInstrument = "Tuba"
+                  break;
+               case "trumpet":
+               case "bb-trumpet":
+               case "brass.trumpet.bflat":
+               case "brass.trumpet":
+                  valInstrument = "Trumpet Bb"
+                  break;
+               case "euphonium-treble":
+                  valInstrument = "Euphonium"
+                  break;
+               case "c-trumpet":
+                  valInstrument = "Trumpet C"
+                  break;
+
+               default:
+                  continue
             }
-            cursor.next();
+            while (cursor.segment) {
+               if (cursor.element && cursor.element.type == Element.CHORD) {
+                  var text = newElement(Element.FINGERING)
+                  var note = cursor.element.notes[0]
+                  text.text = griff(note.pitch)
+                  if (note.tieBack == null) cursor.add(text)
+               }
+               cursor.next();
+            }
+
          }
+
       }
    }
 
