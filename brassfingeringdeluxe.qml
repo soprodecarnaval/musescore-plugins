@@ -356,7 +356,6 @@ MuseScore {
       for(var i = 0; i < cursor.score.parts.length; i++ ){
          var startTrack = cursor.score.parts[i].startTrack
          var endTrack = cursor.score.parts[i].endTrack
-         console.error(`start track: ${startTrack}, end track: ${endTrack}` )
          for(var j = 0; j < (endTrack - startTrack)/4; j++){
             cleanFingering(startTrack/4+j)
          }
@@ -398,7 +397,6 @@ MuseScore {
          var default_shift = 0
          var instrument = cursor.score.parts[i].instrumentId
          console.error(instrument)
-         console.error(`start track: ${startTrack}, end track: ${endTrack}` )
 
          for(var j = 0; j < (endTrack - startTrack)/4; j++){
             cursor.staffIdx = startTrack/4+j;
