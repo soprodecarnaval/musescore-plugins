@@ -107,10 +107,17 @@ MuseScore {
             }
          }
 
-            Button {
+         CheckBox {
+            id: optCleanStaffText
+            text: "Clean staff text"
+            checked: false
+            anchors.horizontalCenter: parent.horizontalCenter
+         }
+
+         Button {
             text: "Clean fingering"
-               anchors {
-               top: addButton.bottom + 2
+            anchors {
+               top: optCleanStaffText.bottom + 2
                horizontalCenter: parent.horizontalCenter
             }
             onClicked: {
@@ -130,6 +137,7 @@ MuseScore {
             category: "BrassFingering"
                property alias valueOptAuto: optAuto.checked
                property alias valueBreakLine: optBreakLine.checked
+               property alias valueOptCleanStaffText: optCleanStaffText.checked
                property alias valueNoteShift: valNoteShift.value
                property alias valueInstrumentSelect: selInstruments.currentIndex
          }
@@ -359,7 +367,16 @@ MuseScore {
             var elements = cursor.element.notes[0].elements;
             for (var i = 0; i < elements.length; i++) {
                if (elements[i].type == Element.FINGERING) {
-                  cursor.element.notes[0].remove(elements[i]);
+                  removeElement(elements[i])
+               }
+            }
+         } 
+         
+         if (optCleanStaffText.checked && cursor.segment.annotations) {
+            for (var i = 0; i < cursor.segment.annotations.length; i++){
+               var annotation = cursor.segment.annotations[i]
+               if (annotation.type === Element.STAFF_TEXT){
+                  removeElement(annotation)
                }
             }
          }
