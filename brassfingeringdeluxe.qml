@@ -8,7 +8,7 @@ import MuseScore 3.0
 MuseScore {
    version: "3.0"
    description: "Adds brass fingering in a more configurable way"
-   pluginType: "dock"
+   pluginType: "dialog"
    id: brassFingeringDeluxe
    menuPath: "Plugins.Brass Fingering Deluxe"
 
@@ -18,6 +18,7 @@ MuseScore {
    height: 250
 
    property bool breakLine: false
+   property bool addOffset: true
    property int noteShift: 0
    property variant minOffset: -1.0;
    property variant multiNoteOffset: -2.3;
@@ -58,6 +59,7 @@ MuseScore {
             model: instrumentList
             onCurrentIndexChanged: onInstrumentSelect()
             anchors.horizontalCenter: parent.horizontalCenter
+            anchors.centerIn: root
          }
 
             Rectangle { height: 4 }
@@ -66,6 +68,13 @@ MuseScore {
             id: optBreakLine
             text: "Break line"
             checked: false
+            anchors.horizontalCenter: parent.horizontalCenter
+         }
+
+         CheckBox {
+            id: optAddOffset
+            text: "Add offset"
+            checked: true
             anchors.horizontalCenter: parent.horizontalCenter
          }
             
@@ -140,6 +149,7 @@ MuseScore {
             category: "BrassFingering"
                property alias valueOptAuto: optAuto.checked
                property alias valueBreakLine: optBreakLine.checked
+               property alias valueAddOffset: optAddOffset.checked
                property alias valueOptCleanStaffText: optCleanStaffText.checked
                property alias valueNoteShift: valNoteShift.value
                property alias valueInstrumentSelect: selInstruments.currentIndex
@@ -149,7 +159,7 @@ MuseScore {
 
    function finish() {
       if (mscoreMajorVersion < 4) {
-        // Qt.quit()
+        Qt.quit()
       }
    }
 
@@ -176,10 +186,6 @@ MuseScore {
          optBreakLine.opacity = 1.0;
       }
    }
-
-   function getNotePitchOffset(pitch, minPitch, maxPitch) {
-		return (pitch - minPitch) / (maxPitch - minPitch) * pitchOffsetScale;
-	}
 
    function griff_trumpet(midi) {
       var lineBreak = breakLine ? "\n" : ""
@@ -371,7 +377,7 @@ MuseScore {
 
    function cleanFingering(staff) {
       var cursor = curScore.newCursor();
-      cursor.staffIdx = staff == null ? cursor.score.selection.startStaff : staff;
+      cursor.staffIdx = staff != null ? staff : cursor.score.selection.startStaff;
       cursor.rewind(0);
       while (cursor.segment) {
          if (cursor.element && cursor.element.type == Element.CHORD && cursor.element.notes[0].elements) {
@@ -439,11 +445,11 @@ MuseScore {
       }
    }
 
-   function addFingering(staffIdx) {
-      var cursor = curScore.newCursor();
-      cursor.rewind(0)
+   function scoreExtremes() {
+      var cursor = curScore.newCursor()
       var minPitch = 84;
       var maxPitch = 26;
+      cursor.rewind(0)
       while (cursor.segment && cursor.tick < curScore.lastSegment.tick + 1) {
          if (cursor.element.notes && cursor.element.notes.length > 0) {
             var pitch = cursor.element.notes[0].pitch;
@@ -452,6 +458,22 @@ MuseScore {
          }
          cursor.next();
       }
+      return [minPitch,maxPitch]
+   }
+
+   function getNotePitchOffset(cursor, pitch) {
+      var offset = 0;
+      if (optAddOffset.checked) {
+         var extremes = scoreExtremes()
+         var minPitch = extremes[0]
+         var maxPitch = extremes[1]
+         offset = minOffset + (cursor.element.notes.length - 1) * multiNoteOffset + (pitch - minPitch) / (maxPitch - minPitch) * pitchOffsetScale;
+      }
+		return offset
+	}
+
+   function addFingering(staffIdx) {
+      var cursor = curScore.newCursor();
       var staff = staffIdx != null ? staffIdx : cursor.score.selection.startStaff;
       cursor.staffIdx = staff
       cleanFingering(staff)
@@ -460,9 +482,9 @@ MuseScore {
          if (cursor.element && cursor.element.type == Element.CHORD) {
             var text = newElement(Element.FINGERING)
             var note = cursor.element.notes[0]
-            var pitchOffset = getNotePitchOffset(note.pitch, minPitch, maxPitch);
+            var pitchOffset = getNotePitchOffset(cursor, note.pitch);
             text.text = griff(note.pitch)
-            text.offsetY = minOffset + (cursor.element.notes.length - 1) * multiNoteOffset + pitchOffset;
+            text.offsetY = pitchOffset;
             if (note.tieBack == null) cursor.add(text)
          }
          cursor.next();
