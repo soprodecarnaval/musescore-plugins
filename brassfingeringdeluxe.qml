@@ -20,6 +20,7 @@ MuseScore {
    property bool breakLine: false
    property bool addOffset: true
    property int noteShift: 0
+   property bool verbose: true
    property variant minOffset: -1.0;
    property variant multiNoteOffset: -2.3;
    property variant pitchOffsetScale: -5.0;
@@ -59,7 +60,6 @@ MuseScore {
             model: instrumentList
             onCurrentIndexChanged: onInstrumentSelect()
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.centerIn: root
          }
 
             Rectangle { height: 4 }
@@ -162,6 +162,16 @@ MuseScore {
         Qt.quit()
       }
    }
+
+   function log(msg) {
+		if (verbose) {
+			console.log(msg);
+		}
+	}
+
+   function inspect(obj) {
+		log(JSON.stringify(obj, null, 2))
+	}
 
    function checkAutoOption() {
       if (optAuto.checked){
@@ -366,7 +376,9 @@ MuseScore {
 
    function cleanAllFingering() {
       var cursor = curScore.newCursor();
-      for(var i = 0; i < cursor.score.parts.length; i++ ){
+      var partsNum = cursor.score.parts.length
+      log("Cleaning " + partsNum + " parts")
+      for(var i = 0; i < partsNum; i++ ){
          var startTrack = cursor.score.parts[i].startTrack
          var endTrack = cursor.score.parts[i].endTrack
          for(var j = 0; j < (endTrack - startTrack)/4; j++){
@@ -377,7 +389,9 @@ MuseScore {
 
    function cleanFingering(staff) {
       var cursor = curScore.newCursor();
-      cursor.staffIdx = staff != null ? staff : cursor.score.selection.startStaff;
+      var staffIdx = staff != null ? staff : cursor.score.selection.startStaff;
+      log("Cleaning staffIdx " + staffIdx)
+      cursor.staffIdx = staffIdx
       cursor.rewind(0);
       while (cursor.segment) {
          if (cursor.element && cursor.element.type == Element.CHORD && cursor.element.notes[0].elements) {
@@ -403,13 +417,14 @@ MuseScore {
 
    function autoAddFingering() {
       var cursor = curScore.newCursor();
+      var partsNum = cursor.score.parts.length
+      log("Adding fingering for " + partsNum + " parts")
 
-      for(var i = 0; i < cursor.score.parts.length; i++ ){
+      for(var i = 0; i < partsNum; i++ ){
          var startTrack = cursor.score.parts[i].startTrack
          var endTrack = cursor.score.parts[i].endTrack
-         var default_shift = 0
          var instrument = cursor.score.parts[i].instrumentId
-         console.error(instrument)
+         log("Part " + i + " - tracks " + startTrack + " to " + endTrack + ". Instrument: " + instrument)
 
          for(var j = 0; j < (endTrack - startTrack)/4; j++){
             var staffIdx = startTrack/4+j;
@@ -445,12 +460,13 @@ MuseScore {
       }
    }
 
-   function scoreExtremes() {
+   function scoreExtremes(staffIdx) {
       var cursor = curScore.newCursor()
+      cursor.staffIdx = staffIdx
       var minPitch = 84;
       var maxPitch = 26;
       cursor.rewind(0)
-      while (cursor.segment && cursor.tick < curScore.lastSegment.tick + 1) {
+      while (cursor.segment) {
          if (cursor.element.notes && cursor.element.notes.length > 0) {
             var pitch = cursor.element.notes[0].pitch;
             minPitch = pitch < minPitch ? pitch : minPitch;
@@ -461,12 +477,9 @@ MuseScore {
       return [minPitch,maxPitch]
    }
 
-   function getNotePitchOffset(cursor, pitch) {
+   function getNotePitchOffset(cursor, pitch, minPitch, maxPitch) {
       var offset = 0;
       if (optAddOffset.checked) {
-         var extremes = scoreExtremes()
-         var minPitch = extremes[0]
-         var maxPitch = extremes[1]
          offset = minOffset + (cursor.element.notes.length - 1) * multiNoteOffset + (pitch - minPitch) / (maxPitch - minPitch) * pitchOffsetScale;
       }
 		return offset
@@ -475,17 +488,21 @@ MuseScore {
    function addFingering(staffIdx) {
       var cursor = curScore.newCursor();
       var staff = staffIdx != null ? staffIdx : cursor.score.selection.startStaff;
+      var extremes = scoreExtremes(staffIdx)
+      var minPitch = extremes[0]
+      var maxPitch = extremes[1]
+      log("Adding fingering for staff " + staff + ". Pitch min/max: " + minPitch + "/" + maxPitch)
       cursor.staffIdx = staff
       cleanFingering(staff)
-      cursor.rewind(0);  // set cursor to first chord/rest
+      cursor.rewind(0);
       while (cursor.segment) {
          if (cursor.element && cursor.element.type == Element.CHORD) {
-            var text = newElement(Element.FINGERING)
+            var fingering = newElement(Element.FINGERING)
             var note = cursor.element.notes[0]
-            var pitchOffset = getNotePitchOffset(cursor, note.pitch);
-            text.text = griff(note.pitch)
-            text.offsetY = pitchOffset;
-            if (note.tieBack == null) cursor.add(text)
+            var pitchOffset = getNotePitchOffset(cursor, note.pitch,minPitch,maxPitch);
+            fingering.text = griff(note.pitch)
+            fingering.offsetY = pitchOffset;
+            if (note.tieBack == null) cursor.add(fingering)
          }
          cursor.next();
       }
