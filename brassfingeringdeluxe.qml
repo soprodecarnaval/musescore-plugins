@@ -503,6 +503,7 @@ MuseScore {
             fingering.text = griff(note.pitch)
             fingering.offsetY = pitchOffset;
             if (note.tieBack == null) cursor.add(fingering)
+            cursor.element.stem.stemDirection = 2
          }
          cursor.next();
       }
