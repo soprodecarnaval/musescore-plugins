@@ -415,20 +415,6 @@ MuseScore {
       }
    }
 
-   function setStyle(cursor) {
-      var style = cursor.score.style
-
-      // A4 landscape
-      style.setValue("pageWidth",11.6929)
-      style.setValue("pageHeight",8.26888)
-
-      // Margin - 5mm and 0 in bottom
-      style.setValue("pageOddLeftMargin",0.19685039370078738)
-      style.setValue("pageOddTopMargin",0.19685039370078738)
-      style.setValue("pageOddBottomMargin",0)
-      style.setValue("pageTwosided",false)
-   }
-
    function autoAddFingering() {
       var cursor = curScore.newCursor();
       var partsNum = cursor.score.parts.length
