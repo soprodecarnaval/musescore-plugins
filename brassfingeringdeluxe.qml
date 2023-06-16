@@ -415,6 +415,20 @@ MuseScore {
       }
    }
 
+   function setStyle(cursor) {
+      var style = cursor.score.style
+
+      // A4 landscape
+      style.setValue("pageWidth",11.6929)
+      style.setValue("pageHeight",8.26888)
+
+      // Margin - 5mm and 0 in bottom
+      style.setValue("pageOddLeftMargin",0.19685039370078738)
+      style.setValue("pageOddTopMargin",0.19685039370078738)
+      style.setValue("pageOddBottomMargin",0)
+      style.setValue("pageTwosided",false)
+   }
+
    function autoAddFingering() {
       var cursor = curScore.newCursor();
       var partsNum = cursor.score.parts.length
@@ -424,6 +438,9 @@ MuseScore {
          var startTrack = cursor.score.parts[i].startTrack
          var endTrack = cursor.score.parts[i].endTrack
          var instrument = cursor.score.parts[i].instrumentId
+
+         setStyle(cursor)
+
          log("Part " + i + " - tracks " + startTrack + " to " + endTrack + ". Instrument: " + instrument)
 
          for(var j = 0; j < (endTrack - startTrack)/4; j++){
