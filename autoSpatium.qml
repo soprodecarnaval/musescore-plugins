@@ -49,20 +49,12 @@ MuseScore {
       }	}
 
   function cleanTextBox(){
-    var c=curScore.newCursor()
-    var limiter = 100
-    c.rewind(Cursor.SCORE_START)
-    curScore.selection.select(c) //tackle weird range select problem
-    cmd('prev-element')
-    while( curScore.selection.elements[0].type!=Element.VBOX && limiter > 0){
-        cmd('prev-element')
-        limiter--;
-    }
-    if (limiter > 0){
-      var e=curScore.selection.elements[0]
-      cmd('select-similar')
-      cmd('delete')
-    }
+    cmd('select-all')
+    cmd('append-vbox')
+    cmd('last-element')
+    cmd('next-element')
+    cmd('select-similar')
+    cmd('delete')
   }
 
   function setSpatium(value){
