@@ -65,7 +65,7 @@ MuseScore {
   }
 
   function adjustSpatium(){
-    var start = 60
+    var start = 55
     var current = start
     setSpatium(start)
     while(curScore.npages > nPages){
