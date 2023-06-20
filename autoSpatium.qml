@@ -9,10 +9,10 @@ MuseScore {
   property var step: 0.1
   property var nPages: 1
 
-  function setStyle()
+  function setStyle(score)
   {
-    var style = curScore.style
-    curScore.startCmd()
+    var style = score.style
+    score.startCmd()
     // A4 landscape
     style.setValue("pageWidth", 11.6902)
     style.setValue("pageHeight", 6.69291)
@@ -31,7 +31,7 @@ MuseScore {
     style.setValue("clefKeyRightMargin", 0.8)
     style.setValue("pageEvenBottomMargin", 0)
     style.setValue("enableIndentationOnFirstSystem", 0)
-    curScore.endCmd()
+    score.endCmd()
   }
 
   function log(msg) {
@@ -57,27 +57,57 @@ MuseScore {
     cmd('delete')
   }
 
-  function setSpatium(value){
-    var style = curScore.style
-    curScore.startCmd()
+  function setSpatium(score, value){
+    var style = score.style
+    score.startCmd()
     style.setValue("spatium", value)
-    curScore.endCmd()
+    score.endCmd()
   }
 
-  function adjustSpatium(){
+  function adjustSpatium(score){
     var start = 55
     var current = start
-    setSpatium(start)
-    while(curScore.npages > nPages){
-      setSpatium(current - step)
+    setSpatium(score, start)
+    while(score.npages > nPages){
+      setSpatium(score, current - step)
+      current -= step
+    }
+  }
+
+  function setLeadingSpace(score,value){
+    var segment = score.firstSegment();
+    score.startCmd()
+    while (segment) {
+      segment.leadingSpace = value
+      segment = segment.next
+    }
+    score.endCmd()
+  }
+
+  function adjustLeadingSpace(score){
+    var start = 0.5
+    var current = start
+    var step = 0.05
+    setLeadingSpace(score,start)
+    while(score.npages > nPages){
+      setLeadingSpace(score, current - step)
       current -= step
     }
   }
 
   onRun: {
     cleanTextBox()
-    setStyle()
-    adjustSpatium()
+    // for(var i = 0; i < curScore.excerpts.length; i++){
+    //   var score = curScore.excerpts[i].partScore
+    //   if(score){
+    //     setStyle(score)
+    //     adjustSpatium(score)
+    //     adjustLeadingSpace(curScore)
+    //   }
+    // }
+    setStyle(curScore)
+    adjustSpatium(curScore)
+    adjustLeadingSpace(curScore)
     Qt.quit()
   }
 }
