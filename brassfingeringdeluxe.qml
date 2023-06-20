@@ -425,8 +425,6 @@ MuseScore {
          var endTrack = cursor.score.parts[i].endTrack
          var instrument = cursor.score.parts[i].instrumentId
 
-         setStyle(cursor)
-
          log("Part " + i + " - tracks " + startTrack + " to " + endTrack + ". Instrument: " + instrument)
 
          for(var j = 0; j < (endTrack - startTrack)/4; j++){
@@ -506,7 +504,7 @@ MuseScore {
             fingering.text = griff(note.pitch)
             fingering.offsetY = pitchOffset;
             if (note.tieBack == null) cursor.add(fingering)
-            cursor.element.stem.stemDirection = 2
+            if(cursor.element.stem) cursor.element.stem.stemDirection = 2
          }
          cursor.next();
       }
