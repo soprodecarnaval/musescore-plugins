@@ -2,8 +2,8 @@ import QtQuick 2.0
 import MuseScore 3.0
 
 MuseScore {
-  menuPath: "Plugins.adjustSpatium"
-  description: "Auto adjust spatium to make it fit one page."
+  menuPath: "Plugins.autoFormat"
+  description: "Auto format scores for carnival."
   version: "1.0"
 
   property var step: 0.1
