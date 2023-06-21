@@ -21,6 +21,7 @@ MuseScore {
    property bool addOffset: true
    property int noteShift: 0
    property bool verbose: true
+   property int nPages: 1
    property variant minOffset: -1.0;
    property variant multiNoteOffset: -2.3;
    property variant pitchOffsetScale: -5.0;
@@ -88,7 +89,7 @@ MuseScore {
                horizontalCenter: parent.horizontalCenter
             }
             onClicked: {
-               
+               cleanTextBox()
             }
          }
 
@@ -99,7 +100,13 @@ MuseScore {
                horizontalCenter: parent.horizontalCenter
             }
             onClicked: {
-               
+               curScore.startCmd()
+               if(optAll.checked){
+                  forAllParts(setStyle)
+               } else {
+                  setStyle(curScore)
+               }
+               curScore.endCmd()
             }
          }
 
@@ -110,7 +117,11 @@ MuseScore {
                horizontalCenter: parent.horizontalCenter
             }
             onClicked: {
-               
+               if(optAll.checked){
+                  forAllParts(adjustSpatium)
+               } else {
+                  adjustSpatium(curScore)
+               }
             }
          }
 
@@ -121,7 +132,11 @@ MuseScore {
                horizontalCenter: parent.horizontalCenter
             }
             onClicked: {
-               
+               if(optAll.checked){
+                  forAllParts(adjustLeadingSpace)
+               } else {
+                  adjustLeadingSpace(curScore)
+               }
             }
          }
 
@@ -132,6 +147,78 @@ MuseScore {
          }
       }
    }
+
+   function cleanTextBox(){
+    cmd('select-all')
+    cmd('append-vbox')
+    cmd('last-element')
+    cmd('next-element')
+    cmd('select-similar')
+    cmd('delete')
+  }
+
+   function setStyle(score){
+    var style = score.style
+    score.startCmd()
+    // A4 landscape
+    style.setValue("pageWidth", 11.6902)
+    style.setValue("pageHeight", 6.69291)
+    style.setValue("pagePrintableWidth", 11.2965)
+    style.setValue("staffLowerBorder", 4)
+
+
+    // Margin - 5mm and 0 in bottom
+    style.setValue("pageTwosided", true)
+    style.setValue("pageOddLeftMargin", 0.19685039370078738)
+    style.setValue("pageOddTopMargin", 0.19685039370078738)
+    style.setValue("pageOddBottomMargin", 0)
+    style.setValue("pageEvenLeftMargin", 0.19685039370078738)
+    style.setValue("pageEvenTopMargin", 0.19685039370078738)
+    style.setValue("midClefKeyRightMargin", 1)
+    style.setValue("clefKeyRightMargin", 0.8)
+    style.setValue("pageEvenBottomMargin", 0)
+    style.setValue("enableIndentationOnFirstSystem", 0)
+    score.endCmd()
+  }
+
+  function setSpatium(score, value){
+    var style = score.style
+    score.startCmd()
+    style.setValue("spatium", value)
+    score.endCmd()
+  }
+
+  function adjustSpatium(score){
+    var start = 55
+    var current = start
+    var step = 0.1
+    setSpatium(score, start)
+    while(score.npages > nPages){
+      setSpatium(score, current - step)
+      current -= step
+    }
+  }
+
+  function setLeadingSpace(score,value){
+    var segment = score.firstSegment();
+    score.startCmd()
+    while (segment) {
+      segment.leadingSpace = value
+      segment = segment.next
+    }
+    score.endCmd()
+  }
+
+  function adjustLeadingSpace(score){
+    var start = 0.5
+    var current = start
+    var step = 0.05
+    setLeadingSpace(score,start)
+    while(score.npages > nPages){
+      setLeadingSpace(score, current - step)
+      current -= step
+    }
+  }
 
    function log(msg) {
 		if (verbose) {
@@ -459,7 +546,4 @@ MuseScore {
       }
    }
 
-   onRun: {
-      //   addFingering()
-   }
 }
