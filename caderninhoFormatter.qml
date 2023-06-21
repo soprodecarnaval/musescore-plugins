@@ -9,11 +9,11 @@ MuseScore {
    version: "3.0"
    description: "Different options for formatting the score for carnival"
    pluginType: "dock"
+   dockArea:   "left"
    id: caderninhoFormatter
    menuPath: "Plugins.Caderninho Formatter"
 
    requiresScore: true
-
    width: 200
    height: 250
 
@@ -26,13 +26,6 @@ MuseScore {
    property variant pitchOffsetScale: -5.0;
    property var instrumentList: ["Trumpet Bb", "Trumpet C", "Trombone", "Tuba", "Euphonium"]
    property var valInstrument: "Trumpet Bb"
-
-   Component.onCompleted : {
-      if (mscoreMajorVersion >= 4) {
-         caderninhoFormatter.title = "Caderninho Formatter";
-      }
-      checkAutoOption()
-   }
 
    Item {
       id: rect1
@@ -58,14 +51,14 @@ MuseScore {
 
             onClicked: {
                // set configuration
-               breakLine = true;
+               breakLine = false;
                noteShift = 0;
                
                curScore.startCmd()
-               if(optAll.checked) {
-                  autoAddFingering()
+               if(optAll.checked){
+                  forAllParts(autoAddFingering)
                } else {
-                  addFingering()
+                  autoAddFingering(curScore)
                }
                curScore.endCmd()
             }
@@ -79,10 +72,10 @@ MuseScore {
             }
             onClicked: {
                curScore.startCmd()
-               if(optAll.checked) {
-                  cleanAllFingering()
+               if(optAll.checked){
+                  forAllParts(cleanAllFingering)
                } else {
-                  cleanFingering();
+                  cleanAllFingering(curScore)
                }
                curScore.endCmd()
             }
@@ -327,21 +320,28 @@ MuseScore {
 
    }
 
-   function cleanAllFingering() {
-      var cursor = curScore.newCursor();
+   function forAllParts(callback) {
+      for(var i = 0; i < curScore.excerpts.length; i++){
+         var score = curScore.excerpts[i].partScore
+         if(score) callback(score)
+      }
+   }
+
+   function cleanAllFingering(score) {
+      var cursor = score.newCursor();
       var partsNum = cursor.score.parts.length
       log("Cleaning " + partsNum + " parts")
       for(var i = 0; i < partsNum; i++ ){
          var startTrack = cursor.score.parts[i].startTrack
          var endTrack = cursor.score.parts[i].endTrack
          for(var j = 0; j < (endTrack - startTrack)/4; j++){
-            cleanFingering(startTrack/4+j)
+            cleanFingering(score,startTrack/4+j)
          }
       }
    }
 
-   function cleanFingering(staff) {
-      var cursor = curScore.newCursor();
+   function cleanFingering(score,staff) {
+      var cursor = score.newCursor();
       var staffIdx = staff != null ? staff : cursor.score.selection.startStaff;
       log("Cleaning staffIdx " + staffIdx)
       cursor.staffIdx = staffIdx
@@ -356,7 +356,7 @@ MuseScore {
             }
          } 
          
-         if (optCleanStaffText.checked && cursor.segment.annotations) {
+         if (cursor.segment.annotations) {
             for (var i = 0; i < cursor.segment.annotations.length; i++){
                var annotation = cursor.segment.annotations[i]
                if (annotation.type === Element.STAFF_TEXT){
@@ -368,8 +368,8 @@ MuseScore {
       }
    }
 
-   function autoAddFingering() {
-      var cursor = curScore.newCursor();
+   function autoAddFingering(score) {
+      var cursor = score.newCursor();
       var partsNum = cursor.score.parts.length
       log("Adding fingering for " + partsNum + " parts")
 
@@ -408,14 +408,14 @@ MuseScore {
                default:
                   continue
             }
-            addFingering(staffIdx)
+            addFingering(score,staffIdx)
          }
 
       }
    }
 
-   function scoreExtremes(staffIdx) {
-      var cursor = curScore.newCursor()
+   function scoreExtremes(score,staffIdx) {
+      var cursor = score.newCursor()
       cursor.staffIdx = staffIdx
       var minPitch = 84;
       var maxPitch = 26;
@@ -432,22 +432,18 @@ MuseScore {
    }
 
    function getNotePitchOffset(cursor, pitch, minPitch, maxPitch) {
-      var offset = 0;
-      if (optAddOffset.checked) {
-         offset = minOffset + (cursor.element.notes.length - 1) * multiNoteOffset + (pitch - minPitch) / (maxPitch - minPitch) * pitchOffsetScale;
-      }
-		return offset
+      return minOffset + (cursor.element.notes.length - 1) * multiNoteOffset + (pitch - minPitch) / (maxPitch - minPitch) * pitchOffsetScale;
 	}
 
-   function addFingering(staffIdx) {
-      var cursor = curScore.newCursor();
+   function addFingering(score,staffIdx) {
+      var cursor = score.newCursor();
       var staff = staffIdx != null ? staffIdx : cursor.score.selection.startStaff;
-      var extremes = scoreExtremes(staffIdx)
+      var extremes = scoreExtremes(score,staffIdx)
       var minPitch = extremes[0]
       var maxPitch = extremes[1]
       log("Adding fingering for staff " + staff + ". Pitch min/max: " + minPitch + "/" + maxPitch)
       cursor.staffIdx = staff
-      cleanFingering(staff)
+      cleanFingering(score,staff)
       cursor.rewind(0);
       while (cursor.segment) {
          if (cursor.element && cursor.element.type == Element.CHORD) {
