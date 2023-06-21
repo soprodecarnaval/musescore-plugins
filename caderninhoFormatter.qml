@@ -68,7 +68,6 @@ MuseScore {
          Button {
             text: "Clean fingering"
             anchors {
-               top: addButton.bottom + 2
                horizontalCenter: parent.horizontalCenter
             }
             onClicked: {
@@ -85,7 +84,6 @@ MuseScore {
          Button {
             text: "Clean text boxes"
             anchors {
-               top: addButton.bottom + 2
                horizontalCenter: parent.horizontalCenter
             }
             onClicked: {
@@ -96,7 +94,6 @@ MuseScore {
          Button {
             text: "Set style"
             anchors {
-               top: addButton.bottom + 2
                horizontalCenter: parent.horizontalCenter
             }
             onClicked: {
@@ -113,7 +110,6 @@ MuseScore {
          Button {
             text: "Adjust scale"
             anchors {
-               top: addButton.bottom + 2
                horizontalCenter: parent.horizontalCenter
             }
             onClicked: {
@@ -128,7 +124,6 @@ MuseScore {
          Button {
             text: "Adjust leading space"
             anchors {
-               top: addButton.bottom + 2
                horizontalCenter: parent.horizontalCenter
             }
             onClicked: {
