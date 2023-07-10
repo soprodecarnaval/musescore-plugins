@@ -69,6 +69,8 @@ MuseScore {
                   forAllParts(autoAddFingering)
                } else {
                   autoAddFingering(curScore)
+                  setFingeringFontSize(curScore,8)
+                  adjustFingeringFontSize(curScore)
                }
                curScore.endCmd()
             }
@@ -224,6 +226,34 @@ MuseScore {
     style.setValue("pageEvenBottomMargin", 0)
     style.setValue("enableIndentationOnFirstSystem", 0)
     score.endCmd()
+  }
+
+  function setFingeringFontSize(score,value){
+     var style = score.style
+     score.startCmd()
+     style.setValue("fingeringFontSize",value)
+     score.endCmd()
+  }
+
+  function adjustFingeringFontSize(score){
+     var style = score.style
+     var start = style.value("fingeringFontSize")
+     var current = start
+     var step = 1
+     if (score.npages > 1){
+      setFingeringFontSize(score, start - step)
+      while(score.npages > 1){
+        setFingeringFontSize(score, current - step)
+        current -= step
+      }
+     } else {
+      setFingeringFontSize(score,start + step)
+      while(score.npages <= 1){
+         setFingeringFontSize(score, current + step)
+         current += step
+      }
+      setFingeringFontSize(score, current - step)
+     }
   }
 
   function setSpatium(score, value){
