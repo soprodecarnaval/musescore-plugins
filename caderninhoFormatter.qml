@@ -2,6 +2,7 @@ import QtQuick 2.9
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.3
 import QtQuick.Dialogs 1.2
+import QtQuick.Controls.Styles 1.4
 import Qt.labs.settings 1.0
 import MuseScore 3.0
 
@@ -22,33 +23,41 @@ MuseScore {
    property int noteShift: 0
    property bool verbose: true
    property int nPages: 1
-   property variant minOffset: -1.0;
-   property variant multiNoteOffset: -2.3;
-   property variant pitchOffsetScale: -5.0;
+   property variant minOffset: -1.0
+   property variant multiNoteOffset: -2.3
+   property variant pitchOffsetScale: -5.0
    property var instrumentList: ["Trumpet Bb", "Trumpet C", "Trombone", "Tuba", "Euphonium"]
    property var valInstrument: "Trumpet Bb"
 
    Item {
       id: rect1
       anchors.fill: parent
-
-        ColumnLayout {
-         id: col1
+      ColumnLayout {
          anchors.fill: parent
-
-         Rectangle { height: 2 }
 
          CheckBox {
             id: optAll
             text: "Apply to all parts"
             checked: false
             anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.top
+            anchors.topMargin: 10
          }
+          
+        GridLayout {
+         id: buttonsGrid
+         columns: 2
+         anchors.horizontalCenter: parent.horizontalCenter
+         anchors.top: optAll.bottom
+         anchors.topMargin: 10
+         Layout.leftMargin: 15
+         Layout.rightMargin: 15
 
          Button {
             id: addButton
             text: "Add fingering"
-            anchors.horizontalCenter: parent.horizontalCenter
+            Layout.fillWidth: true
+            Layout.margins: 3
 
             onClicked: {
                // set configuration
@@ -67,9 +76,9 @@ MuseScore {
 
          Button {
             text: "Clean fingering"
-            anchors {
-               horizontalCenter: parent.horizontalCenter
-            }
+            Layout.fillWidth: true
+            Layout.margins: 3
+            
             onClicked: {
                curScore.startCmd()
                if(optAll.checked){
@@ -83,9 +92,9 @@ MuseScore {
 
          Button {
             text: "Clean text boxes"
-            anchors {
-               horizontalCenter: parent.horizontalCenter
-            }
+            Layout.fillWidth: true
+            Layout.margins: 3
+
             onClicked: {
                cleanTextBox()
             }
@@ -93,9 +102,9 @@ MuseScore {
 
          Button {
             text: "Set style"
-            anchors {
-               horizontalCenter: parent.horizontalCenter
-            }
+            Layout.fillWidth: true
+            Layout.margins: 3
+
             onClicked: {
                curScore.startCmd()
                if(optAll.checked){
@@ -109,9 +118,9 @@ MuseScore {
 
          Button {
             text: "Adjust scale"
-            anchors {
-               horizontalCenter: parent.horizontalCenter
-            }
+            Layout.fillWidth: true
+            Layout.margins: 3
+
             onClicked: {
                if(optAll.checked){
                   forAllParts(adjustSpatium)
@@ -123,9 +132,9 @@ MuseScore {
 
          Button {
             text: "Adjust leading space"
-            anchors {
-               horizontalCenter: parent.horizontalCenter
-            }
+            Layout.fillWidth: true
+            Layout.margins: 3
+
             onClicked: {
                if(optAll.checked){
                   forAllParts(adjustLeadingSpace)
@@ -134,13 +143,54 @@ MuseScore {
                }
             }
          }
-
-            // preserve user settings
-            Settings {
-            category: "Formatter"
-               property alias valueoptAll: optAll.checked
+         // preserve user settings
+         Settings {
+            category: "General"
+            property alias valueoptAll: optAll.checked
          }
       }
+
+      // Text {
+      //    id: optTitle
+      //    anchors.top: buttonsGrid.bottom
+      //    anchors.topMargin: 10
+      //    anchors.left: parent.left
+      //    anchors.leftMargin: 10
+      //    text: "Options:"
+      // }
+
+      // TabView {
+      //    Layout.fillWidth: true
+      //    anchors.horizontalCenter: parent.horizontalCenter
+      //    anchors.top: optTitle.bottom
+      //    anchors.topMargin: 10
+      //    Settings {
+      //       category: "Fingering"
+      //       property alias valueoptAddOffset: optAddOffset.checked
+      //    }
+      //    style: TabViewStyle {
+      //       tabOverlap: 0
+      //    }
+      //    Tab {
+      //       title: "Fingering"
+      //       CheckBox {
+      //          id: optAddOffset
+      //          text: "Add offset"
+      //          checked: true
+      //          anchors.top: parent.top
+      //          anchors.topMargin: 10
+      //          anchors.left: parent.left
+      //          anchors.leftMargin: 10
+      //       }
+      //    }
+      //    Tab {
+      //       title: "Style"
+      //       Rectangle { color: "blue" }
+      //    }
+      // }
+
+   }
+
    }
 
    function cleanTextBox(){
