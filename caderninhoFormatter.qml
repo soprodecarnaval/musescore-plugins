@@ -43,12 +43,21 @@ MuseScore {
             anchors.top: parent.top
             anchors.topMargin: 10
          }
-          
+
+         Text {
+            id: fingButtonTitle
+            anchors.top: optAll.bottom
+            anchors.topMargin: 10
+            anchors.left: parent.left
+            anchors.leftMargin: 10
+            text: "Fingering:"
+         }
+
         GridLayout {
-         id: buttonsGrid
+         id: fingeringButtonsGrid
          columns: 2
          anchors.horizontalCenter: parent.horizontalCenter
-         anchors.top: optAll.bottom
+         anchors.top: fingButtonTitle.bottom
          anchors.topMargin: 10
          Layout.leftMargin: 15
          Layout.rightMargin: 15
@@ -69,7 +78,6 @@ MuseScore {
                   forAllParts(autoAddFingering)
                } else {
                   autoAddFingering(curScore)
-                  setFingeringFontSize(curScore,8)
                   adjustFingeringFontSize(curScore)
                }
                curScore.endCmd()
@@ -91,6 +99,26 @@ MuseScore {
                curScore.endCmd()
             }
          }
+        }
+
+
+      Text {
+         id: styleButtonTitle
+         anchors.top: fingeringButtonsGrid.bottom
+         anchors.topMargin: 10
+         anchors.left: parent.left
+         anchors.leftMargin: 10
+         text: "Style:"
+      }
+
+      GridLayout {
+         id: styleButtonsGrid
+         columns: 2
+         anchors.horizontalCenter: parent.horizontalCenter
+         anchors.top: styleButtonTitle.bottom
+         anchors.topMargin: 10
+         Layout.leftMargin: 15
+         Layout.rightMargin: 15
 
          Button {
             text: "Clean text boxes"
@@ -117,9 +145,55 @@ MuseScore {
                curScore.endCmd()
             }
          }
+         // preserve user settings
+         Settings {
+            category: "General"
+            property alias valueoptAll: optAll.checked
+         }
+      }
+
+      Text {
+         id: autoAdjustButtonTitle
+         anchors.top: styleButtonsGrid.bottom
+         anchors.topMargin: 10
+         anchors.left: parent.left
+         anchors.leftMargin: 10
+         text: "Auto adjust:"
+      }
+
+      GridLayout {
+         id: autoAdjustButtonsGrid
+         columns: 3
+         anchors.horizontalCenter: parent.horizontalCenter
+         anchors.top: autoAdjustButtonTitle.bottom
+         anchors.topMargin: 10
+         Layout.leftMargin: 15
+         Layout.rightMargin: 15
 
          Button {
-            text: "Adjust scale"
+            id: adjustFingering
+            text: "Fingering size"
+            Layout.fillWidth: true
+            Layout.margins: 3
+
+            onClicked: {
+               // set configuration
+               breakLine = false;
+               noteShift = 0;
+               
+               curScore.startCmd()
+               if(optAll.checked){
+                  forAllParts(adjustFingeringFontSize)
+               } else {
+                  adjustFingeringFontSize(curScore)
+               }
+               curScore.endCmd()
+            }
+         }
+
+
+         Button {
+            text: "Scale"
             Layout.fillWidth: true
             Layout.margins: 3
 
@@ -133,7 +207,7 @@ MuseScore {
          }
 
          Button {
-            text: "Adjust leading space"
+            text: "Leading space"
             Layout.fillWidth: true
             Layout.margins: 3
 
@@ -145,16 +219,13 @@ MuseScore {
                }
             }
          }
-         // preserve user settings
-         Settings {
-            category: "General"
-            property alias valueoptAll: optAll.checked
-         }
+
+
       }
 
       // Text {
       //    id: optTitle
-      //    anchors.top: buttonsGrid.bottom
+      //    anchors.top: fingeringButtonsGrid.bottom
       //    anchors.topMargin: 10
       //    anchors.left: parent.left
       //    anchors.leftMargin: 10
@@ -241,18 +312,17 @@ MuseScore {
      var current = start
      var step = 1
      if (score.npages > 1){
-      setFingeringFontSize(score, start - step)
       while(score.npages > 1){
         setFingeringFontSize(score, current - step)
         current -= step
       }
      } else {
-      setFingeringFontSize(score,start + step)
       while(score.npages <= 1){
          setFingeringFontSize(score, current + step)
          current += step
       }
-      setFingeringFontSize(score, current - step)
+      setFingeringFontSize(score, current + step)
+      if (score.npages > 1) setFingeringFontSize(score, current - 2*step)
      }
   }
 
@@ -264,14 +334,22 @@ MuseScore {
   }
 
   function adjustSpatium(score){
-    var start = 55
-    var current = start
-    var step = 0.1
-    setSpatium(score, start)
-    while(score.npages > nPages){
+   var style = score.style
+   var start = style.value("spatium")
+   var current = start
+   var step = 0.1
+   if(score.npages > 1){
+      while(score.npages > 1){
+         setSpatium(score, current - step)
+         current -= step
+      }
+   } else {
+      while(score.npages <= 1){
+         setSpatium(score, current + step)
+         current += step
+      }
       setSpatium(score, current - step)
-      current -= step
-    }
+   }
   }
 
   function setLeadingSpace(score,value){
