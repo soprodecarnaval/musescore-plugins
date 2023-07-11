@@ -632,10 +632,10 @@ MuseScore {
          case "Trombone": return griff_trombone(midi + 2);
          case "Tuba": return griff_tuba(midi + 2);
          case "Euphonium": return griff_euphonium(midi + 2);
-         case "Sax Soprano": return griff_sax(midi - 2);
-         case "Sax Alto": return griff_sax(midi + 5);
-         case "Sax Tenor": return griff_sax(midi + 10);
-         case "Sax Baritone": return griff_sax(midi + 17);
+         case "Sax Soprano": return griff_sax(midi + 18);
+         case "Sax Alto": return griff_sax(midi + 25);
+         case "Sax Tenor": return griff_sax(midi + 30);
+         case "Sax Baritone": return griff_sax(midi + 37);
          default: return "";
       }
    }
@@ -792,7 +792,7 @@ MuseScore {
             var pitchOffset = getNotePitchOffset(cursor, note.pitch,minPitch,maxPitch);
             fingering.text = griff(note.pitch)
             fingering.offsetY = pitchOffset;
-            if (note.tieBack == null) cursor.add(fingering)
+            if (note.tieBack == null && fingering.text != "") cursor.add(fingering)
             if(cursor.element.stem) cursor.element.stem.stemDirection = 2
          }
          cursor.next();
