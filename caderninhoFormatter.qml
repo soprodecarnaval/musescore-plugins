@@ -26,7 +26,17 @@ MuseScore {
    property variant minOffset: -1.0
    property variant multiNoteOffset: -2.3
    property variant pitchOffsetScale: -5.0
-   property var instrumentList: ["Trumpet Bb", "Trumpet C", "Trombone", "Tuba", "Euphonium"]
+   property var instrumentList: [
+      "Trumpet Bb", 
+      "Trumpet C", 
+      "Trombone", 
+      "Tuba", 
+      "Euphonium",
+      "Sax Soprano",
+      "Sax Alto",
+      "Sax Tenor",
+      "Sax Baritone",
+      ]
    property var valInstrument: "Trumpet Bb"
 
    onScoreStateChanged: {
@@ -581,6 +591,39 @@ MuseScore {
       }
    }
 
+   function griff_sax(midi) {
+      switch (midi) {
+         case 54: return "4,\n4'"; break;
+         case 55: return "4-\n4"; break;
+         case 56: return "3\n4"; break;
+         case 57: return "4¬\n4"; break;
+         case 58: return "3\n3"; break;
+         case 59: return "3\n4''"; break;
+         case 60: return "3\n2"; break;
+         case 61: return "3\n1"; break;
+         case 62: return "3\n1*"; break;
+         case 63: return "3\n0"; break;
+         case 64: return "4'\n0"; break;
+         case 65: return "2\n0"; break;
+         case 66: return "2\n1-"; break;
+         case 67: return "1\n0"; break;
+         case 68: return "1*\n0"; break;
+         case 69: return "0\n0"; break;
+         case 70: return "3\u0361\n3"; break;
+         case 71: return "3\u0361\n4'"; break;
+         case 72: return "3\u0361\n2"; break;
+         case 73: return "3\u0361\n1"; break;
+         case 74: return "3\u0361\n1*"; break;
+         case 75: return "3\u0361\n0"; break;
+         case 76: return "4\u0361'\n0"; break;
+         case 77: return "2\u0361\n0"; break;
+         case 78: return "2\u0361\n1-"; break;
+         case 79: return "1\u0361\n0"; break;
+         case 80: return "1\u0361*\n0"; break;
+         default: return "";
+      }
+   }
+
    function griff(midi) {
       midi = midi - 20 + noteShift;
       switch (valInstrument) {
@@ -589,9 +632,12 @@ MuseScore {
          case "Trombone": return griff_trombone(midi + 2);
          case "Tuba": return griff_tuba(midi + 2);
          case "Euphonium": return griff_euphonium(midi + 2);
+         case "Sax Soprano": return griff_sax(midi - 2);
+         case "Sax Alto": return griff_sax(midi + 5);
+         case "Sax Tenor": return griff_sax(midi + 10);
+         case "Sax Baritone": return griff_sax(midi + 17);
          default: return "";
       }
-
    }
 
    function listProperty(item) {
@@ -687,7 +733,18 @@ MuseScore {
                case "c-trumpet":
                   valInstrument = "Trumpet C"
                   break;
-
+               case "wind.reed.saxophone.soprano":
+                  valInstrument = "Sax Soprano"
+                  break;
+               case "wind.reed.saxophone.alto":
+                  valInstrument = "Sax Alto"
+                  break;
+               case "wind.reed.saxophone.tenor":
+                  valInstrument = "Sax Tenor"
+                  break;
+               case "wind.reed.saxophone.baritone":
+                  valInstrument = "Sax Baritone"
+                  break;
                default:
                   continue
             }
