@@ -29,6 +29,12 @@ MuseScore {
    property var instrumentList: ["Trumpet Bb", "Trumpet C", "Trombone", "Tuba", "Euphonium"]
    property var valInstrument: "Trumpet Bb"
 
+   onScoreStateChanged: {
+        if (state.selectionChanged && curScore){
+           fingeringFontSizeVal.value = curScore.style.value("fingeringFontSize")
+        }
+    }
+
    Item {
       id: rect1
       anchors.fill: parent
@@ -50,6 +56,7 @@ MuseScore {
             anchors.topMargin: 10
             anchors.left: parent.left
             anchors.leftMargin: 10
+            font.bold: true
             text: "Fingering:"
          }
 
@@ -59,14 +66,14 @@ MuseScore {
          anchors.horizontalCenter: parent.horizontalCenter
          anchors.top: fingButtonTitle.bottom
          anchors.topMargin: 10
-         Layout.leftMargin: 15
-         Layout.rightMargin: 15
+         Layout.leftMargin: 5
+         Layout.rightMargin: 5
 
          Button {
             id: addButton
             text: "Add fingering"
             Layout.fillWidth: true
-            Layout.margins: 3
+            Layout.margins: 1
 
             onClicked: {
                // set configuration
@@ -78,7 +85,6 @@ MuseScore {
                   forAllParts(autoAddFingering)
                } else {
                   autoAddFingering(curScore)
-                  adjustFingeringFontSize(curScore)
                }
                curScore.endCmd()
             }
@@ -87,7 +93,7 @@ MuseScore {
          Button {
             text: "Clean fingering"
             Layout.fillWidth: true
-            Layout.margins: 3
+            Layout.margins: 1
             
             onClicked: {
                curScore.startCmd()
@@ -108,6 +114,7 @@ MuseScore {
          anchors.topMargin: 10
          anchors.left: parent.left
          anchors.leftMargin: 10
+         font.bold: true
          text: "Style:"
       }
 
@@ -117,13 +124,13 @@ MuseScore {
          anchors.horizontalCenter: parent.horizontalCenter
          anchors.top: styleButtonTitle.bottom
          anchors.topMargin: 10
-         Layout.leftMargin: 15
-         Layout.rightMargin: 15
+         Layout.leftMargin: 5
+         Layout.rightMargin: 5
 
          Button {
             text: "Clean text boxes"
             Layout.fillWidth: true
-            Layout.margins: 3
+            Layout.margins: 1
 
             onClicked: {
                cleanTextBox()
@@ -133,7 +140,7 @@ MuseScore {
          Button {
             text: "Set style"
             Layout.fillWidth: true
-            Layout.margins: 3
+            Layout.margins: 1
 
             onClicked: {
                curScore.startCmd()
@@ -158,23 +165,52 @@ MuseScore {
          anchors.topMargin: 10
          anchors.left: parent.left
          anchors.leftMargin: 10
+         font.bold: true
          text: "Auto adjust:"
       }
 
       GridLayout {
          id: autoAdjustButtonsGrid
-         columns: 3
+         columns: 2
          anchors.horizontalCenter: parent.horizontalCenter
          anchors.top: autoAdjustButtonTitle.bottom
          anchors.topMargin: 10
-         Layout.leftMargin: 15
-         Layout.rightMargin: 15
+         Layout.leftMargin: 5
+         Layout.rightMargin: 5
+
+         Button {
+            text: "Scale"
+            Layout.fillWidth: true
+            Layout.margins: 1
+
+            onClicked: {
+               if(optAll.checked){
+                  forAllParts(adjustSpatium)
+               } else {
+                  adjustSpatium(curScore)
+               }
+            }
+         }
+
+         Button {
+            text: "Leading space"
+            Layout.fillWidth: true
+            Layout.margins: 1
+
+            onClicked: {
+               if(optAll.checked){
+                  forAllParts(adjustLeadingSpace)
+               } else {
+                  adjustLeadingSpace(curScore)
+               }
+            }
+         }
 
          Button {
             id: adjustFingering
             text: "Fingering size"
             Layout.fillWidth: true
-            Layout.margins: 3
+            Layout.margins: 1
 
             onClicked: {
                // set configuration
@@ -191,36 +227,41 @@ MuseScore {
             }
          }
 
+      }
 
-         Button {
-            text: "Scale"
-            Layout.fillWidth: true
-            Layout.margins: 3
+      Text {
+         id: manualAdjustTitle
+         anchors.top: autoAdjustButtonsGrid.bottom
+         anchors.topMargin: 10
+         anchors.left: parent.left
+         anchors.leftMargin: 10
+         font.bold: true
+         text: "Manual adjust:"
+      }
 
-            onClicked: {
-               if(optAll.checked){
-                  forAllParts(adjustSpatium)
-               } else {
-                  adjustSpatium(curScore)
-               }
-            }
+      Text {
+         id: fingeringManualAdjustText
+         anchors.top: manualAdjustTitle.bottom
+         anchors.topMargin: 10
+         anchors.left: parent.left
+         anchors.leftMargin: 20
+         text: "Fingering size:"
+      }
+
+      SpinBox {
+         id: fingeringFontSizeVal
+         //implicitWidth: 45
+         anchors.top: manualAdjustTitle.bottom
+         anchors.topMargin: 10
+         anchors.left: fingeringManualAdjustText.right
+         anchors.leftMargin: 10
+         decimals: 0
+         minimumValue: 1
+         maximumValue: 100
+         value: curScore.style.value("fingeringFontSize")
+         onEditingFinished: {
+            setFingeringFontSize(curScore,fingeringFontSizeVal.value)
          }
-
-         Button {
-            text: "Leading space"
-            Layout.fillWidth: true
-            Layout.margins: 3
-
-            onClicked: {
-               if(optAll.checked){
-                  forAllParts(adjustLeadingSpace)
-               } else {
-                  adjustLeadingSpace(curScore)
-               }
-            }
-         }
-
-
       }
 
       // Text {
@@ -310,9 +351,10 @@ MuseScore {
      var style = score.style
      var start = style.value("fingeringFontSize")
      var current = start
+     var min = 7
      var step = 1
      if (score.npages > 1){
-      while(score.npages > 1){
+      while(score.npages > 1 && current >= min){
         setFingeringFontSize(score, current - step)
         current -= step
       }
@@ -324,6 +366,7 @@ MuseScore {
       setFingeringFontSize(score, current + step)
       if (score.npages > 1) setFingeringFontSize(score, current - 2*step)
      }
+     fingeringFontSizeVal.value = style.value("fingeringFontSize")
   }
 
   function setSpatium(score, value){
