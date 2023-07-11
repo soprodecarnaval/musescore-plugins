@@ -42,6 +42,7 @@ MuseScore {
    onScoreStateChanged: {
         if (state.selectionChanged && curScore){
            fingeringFontSizeVal.value = curScore.style.value("fingeringFontSize")
+           saptiumSizeVal.value = curScore.style.value("spatium")
         }
     }
 
@@ -249,31 +250,47 @@ MuseScore {
          text: "Manual adjust:"
       }
 
-      Text {
-         id: fingeringManualAdjustText
+      GridLayout {
+         id: manualAdjustGrid
+         columns: 2
+         anchors.horizontalCenter: parent.horizontalCenter
          anchors.top: manualAdjustTitle.bottom
          anchors.topMargin: 10
-         anchors.left: parent.left
-         anchors.leftMargin: 20
-         text: "Fingering size:"
-      }
+         Layout.leftMargin: 5
+         Layout.rightMargin: 5
 
-      SpinBox {
-         id: fingeringFontSizeVal
-         //implicitWidth: 45
-         anchors.top: manualAdjustTitle.bottom
-         anchors.topMargin: 10
-         anchors.left: fingeringManualAdjustText.right
-         anchors.leftMargin: 10
-         decimals: 0
-         minimumValue: 1
-         maximumValue: 100
-         value: curScore.style.value("fingeringFontSize")
-         onEditingFinished: {
-            setFingeringFontSize(curScore,fingeringFontSizeVal.value)
+         Text {
+            id: fingeringManualAdjustText
+            text: "Fingering size:"
+         }
+
+         SpinBox {
+            id: fingeringFontSizeVal
+            decimals: 0
+            minimumValue: 1
+            maximumValue: 100
+            value: curScore.style.value("fingeringFontSize")
+            onEditingFinished: {
+               setFingeringFontSize(curScore,fingeringFontSizeVal.value)
+            }
+         }
+
+         Text {
+            id: spatiumManualAdjust
+            text: "Spatium:"
+         }
+
+         SpinBox {
+            id: saptiumSizeVal
+            decimals: 0
+            minimumValue: 1
+            maximumValue: 100
+            value: curScore.style.value("spatium")
+            onEditingFinished: {
+               setSpatium(curScore,saptiumSizeVal.value)
+            }
          }
       }
-
       // Text {
       //    id: optTitle
       //    anchors.top: fingeringButtonsGrid.bottom
@@ -420,9 +437,19 @@ MuseScore {
     var current = start
     var step = 0.05
     setLeadingSpace(score,start)
-    while(score.npages > nPages){
+    if(score.npages > 1){
+      while(score.npages > 1){
+         console.log("Reducing leading space")
+         setLeadingSpace(score, current - step)
+         current -= step
+      }
+    } else {
+      while(score.npages <= 1){
+         console.log("Increasing leading space")
+         setLeadingSpace(score, current + step)
+         current += step
+      }
       setLeadingSpace(score, current - step)
-      current -= step
     }
   }
 
