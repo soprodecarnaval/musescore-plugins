@@ -31,6 +31,7 @@ MuseScore {
       "Trumpet C", 
       "Trombone", 
       "Tuba", 
+      "Tuba Eb", 
       "Euphonium",
       "Sax Soprano",
       "Sax Alto",
@@ -658,6 +659,7 @@ MuseScore {
          case "Trumpet C": return griff_trumpet(midi);
          case "Trombone": return griff_trombone(midi + 2);
          case "Tuba": return griff_tuba(midi + 2);
+         case "Tuba Eb": return griff_tuba(midi - 3);
          case "Euphonium": return griff_euphonium(midi + 2);
          case "Sax Soprano": return griff_sax(midi + 18);
          case "Sax Alto": return griff_sax(midi + 25);
@@ -724,21 +726,29 @@ MuseScore {
       }
    }
 
+   function hasEbInPartName(part) {
+      return part && part.longName
+         && (part.partName.indexOf("Eb") > -1 || part.partName.indexOf("E♭") > -1
+         || part.longName.indexOf("Eb") > -1 || part.longName.indexOf("E♭") > -1
+         || part.shortName.indexOf("Eb") > -1 || part.shortName.indexOf("E♭") > -1)
+   }
+
    function autoAddFingering(score) {
       var cursor = score.newCursor();
       var partsNum = cursor.score.parts.length
       log("Adding fingering for " + partsNum + " parts")
 
       for(var i = 0; i < partsNum; i++ ){
-         var startTrack = cursor.score.parts[i].startTrack
-         var endTrack = cursor.score.parts[i].endTrack
-         var instrument = cursor.score.parts[i].instrumentId
+         const part = cursor.score.parts[i]
+         const startTrack = part.startTrack
+         const endTrack = part.endTrack
+         const instrumentId = part.instrumentId
 
-         log("Part " + i + " - tracks " + startTrack + " to " + endTrack + ". Instrument: " + instrument)
+         log("Part " + i + " - tracks " + startTrack + " to " + endTrack + ". Instrument ID: " + instrumentId)
 
          for(var j = 0; j < (endTrack - startTrack)/4; j++){
             var staffIdx = startTrack/4+j;
-            switch(instrument) {
+            switch(instrumentId) {
                case "brass.trombone":
                case "trombone":
                case "brass.trombone.tenor":
@@ -746,7 +756,7 @@ MuseScore {
                   break;
                case "brass.tuba":
                case "tuba":
-                  valInstrument = "Tuba"
+                  valInstrument = hasEbInPartName(part) ? "Tuba Eb" : "Tuba"
                   break;
                case "trumpet":
                case "bb-trumpet":
